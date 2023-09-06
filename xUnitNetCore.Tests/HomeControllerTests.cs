@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,44 +7,74 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using xUnitNetCore.Controllers;
+using xUnitNetCore.Models;
 
 namespace xUnitNetCore.Tests
 {
     public class HomeControllerTests
     {
         [Fact]
-        public void IndexViewDataMessage()
+        public void IndexReturnsAViewResultWithAListOfUsers()
         {
             // Arrange
-            HomeController controller = new HomeController();
+            var mock = new Mock<IRepository>();
+            mock.Setup(repo => repo.GetAll()).Returns(GetTestUsers());
+            var controller = new HomeController(mock.Object);
 
             // Act
-            ViewResult result = controller.Index() as ViewResult;
+            var result = controller.Index();
 
             // Assert
-            Assert.Equal("Hello world!", result?.ViewData["Message"]);
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsAssignableFrom<IEnumerable<User>>(viewResult.Model);
+            Assert.Equal(GetTestUsers().Count(), model.Count());
         }
 
-        [Fact]
-        public void IndexViewResultNotNull()
+        private List<User> GetTestUsers()
         {
-            // Arrange
-            HomeController controller = new HomeController();
-            // Act
-            ViewResult result = controller.Index() as ViewResult;
-            // Assert
-            Assert.NotNull(result);
+            var users = new List<User>()
+            {
+                new User { Id = 1, Name = "Albert", Age = 28},
+                new User { Id = 1, Name = "Denis", Age = 26},
+                new User { Id = 1, Name = "Mikhail", Age = 37}
+            };
+
+            return users;
         }
 
-        [Fact]
-        public void IndexViewNameEqualIndex()
-        {
-            // Arrange
-            HomeController controller = new HomeController();
-            // Act
-            ViewResult result = controller.Index() as ViewResult;
-            // Assert
-            Assert.Equal("Index", result?.ViewName);
-        }
+        //[Fact]
+        //public void IndexViewDataMessage()
+        //{
+        //    // Arrange
+        //    HomeController controller = new HomeController();
+
+        //    // Act
+        //    ViewResult result = controller.Index() as ViewResult;
+
+        //    // Assert
+        //    Assert.Equal("Hello world!", result?.ViewData["Message"]);
+        //}
+
+        //[Fact]
+        //public void IndexViewResultNotNull()
+        //{
+        //    // Arrange
+        //    HomeController controller = new HomeController();
+        //    // Act
+        //    ViewResult result = controller.Index() as ViewResult;
+        //    // Assert
+        //    Assert.NotNull(result);
+        //}
+
+        //[Fact]
+        //public void IndexViewNameEqualIndex()
+        //{
+        //    // Arrange
+        //    HomeController controller = new HomeController();
+        //    // Act
+        //    ViewResult result = controller.Index() as ViewResult;
+        //    // Assert
+        //    Assert.Equal("Index", result?.ViewName);
+        //}
     }
 }
